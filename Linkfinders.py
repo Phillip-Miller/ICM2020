@@ -13,6 +13,9 @@ import statistics
 import scipy
 import networkx as nx
 import pandas as pd
+from collections import Counter
+import operator
+
 fullevents = open(r"2020_Problem_D_DATA\fullevents.csv", "r")
 matches = open(r"2020_Problem_D_DATA\matches.csv", "r")
 passingevents = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
@@ -42,32 +45,74 @@ class analyzeData:
             if "Huskies" in line[2] and "Huskies" in line[3]:
                 passer.append(line[2])
                 reciver.append(line[3])
-              
-        
-        passerNode = []
-#        for item in passer:
-#            passerNode.append(item.number_of_edges)
+    
         edge = []
+        edge1 = []
+        edge_no_dup = []
+        edge_width = []
+        
+
         for i in range(len(passer)):
-            edge.append([passer[i],reciver[i]])
+            edge1.append(passer[i]+ " " + reciver[i])
+        for edge in edge1:
+            if edge not in edge_no_dup:
+                edge_no_dup.append(edge)
+        z = Counter(edge1)
+        maxEdge = 0
+        for k,v in z.items():
+            if v > maxEdge:
+                maxEdge = v
+            
+        
+        edge_no_dup_split = []
+        for edge in edge_no_dup:
+            edge_width.append(z[edge]/maxEdge*6)
+            x = edge.split(" ")
+            edge_no_dup_split.append((x[0],x[1]))
+        edge_no_dup = edge_no_dup_split
+
+        
         node_no_dup = [] 
         for i in passer: 
-            if i not in passer: 
+            if i not in node_no_dup: 
                 node_no_dup.append(i)
+        #append a goal node
+        node_no_dup_label = []
+        labels = {}
+        for node in node_no_dup:
+            labels[node] = (node[7:])
+        labels["Goal"] = "Goal"
+        node_no_dup.append("Goal")
+        print(node_no_dup_label)
         G = nx.Graph() # Initialize a Graph object                                                        
         G.add_nodes_from(node_no_dup) # Add nodes to the Graph                             
-        G.add_edges_from(edge) # Add edges to the Graph  
-        print(nx.info(G)) # Print information about the Graph 
+        G.add_edges_from(edge_no_dup) # Add edges to the Graph  
+        #print(nx.info(G)) # Print information about the Graph 
+        
         
         mapping = {0: 'a', 1: 'b', 2: 'c'}
         H = nx.relabel_nodes(G, mapping)
+        
         plt.figure(figsize=(10, 10))
         
         #nx.draw(g, pos=node_positions, edge_color=edge_colors, node_size=10, node_color='black')
         posdict = analyzeData.calcAvgPostion()
-#        print("POSDICT",posdict)
-#        print(G.nodes())
-        nx.draw(G, pos = posdict)
+        #assigning colors
+        colormap = []
+        for name in node_no_dup:
+            if "_G" in name:
+                colormap.append("Yellow")
+            if  "_D" in name:
+                colormap.append("Green")
+            if  "_M" in name:
+                colormap.append("Blue")
+            if "_F" in name:
+                colormap.append("Orange")
+            if "Goal" in name:
+                colormap.append("Red")
+        
+        nx.draw_networkx(G, pos = posdict,node_color=colormap,width = edge_width, labels = labels,
+                         font_color = "White")
         
         plt.title('Soccer Players', size=15)
         plt.show()
@@ -104,7 +149,9 @@ class analyzeData:
                 totalX += point.returnX()
                 totalY += point.returnY()
                 #Scaling factor longer field then wide
-            avgPlayerPosition[k] = ((totalX/DividingFactor)*1.7, totalY/DividingFactor)
+            avgPlayerPosition[k] = ((totalX/DividingFactor)*1.3, totalY/DividingFactor*.9)
+
+        avgPlayerPosition["Goal"] = (100,50)
         return avgPlayerPosition
     def calcNodeSize():
         pass
@@ -132,13 +179,21 @@ class Point:
         return self.x
     def returnY(self):
         return self.y
-    
-    
+class Player(Point):
+    def __init__(self,x,y,name,degree = 0):
+        self.x = float(x)
+        self.y = float(y)
+        self.name = name
+        self.degree = degree
+    def returnDegree(self):
+        return self.degree
+    def returnName(self):
+        return self.name
 if __name__ == "__main__":
      analyzeData.mainM()
      #print(analyzeData.calcAvgPostion())
      #print(analyzeData.calcAvgPostion(passingevents))
-    
+     
     
     
 
