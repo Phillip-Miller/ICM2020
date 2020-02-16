@@ -3,6 +3,8 @@
 Created on Thu Feb 13 15:13:46 2020
 
 @author: PhillipM
+Shots are orange
+Goals are red
 """
 
 import matplotlib.pyplot as plt
@@ -36,6 +38,7 @@ class triangle(Player):
     pass
 
 class analyzeData:
+        
     def mainM():
         passer = []
         reciver = []
@@ -46,14 +49,18 @@ class analyzeData:
                 passer.append(line[2])
                 reciver.append(line[3])
     
-        edge = []
         edge1 = []
         edge_no_dup = []
         edge_width = []
-        
-
+        #@FIXME CALL SHOTS HERE
+        shooter = analyzeData.calcShots()
         for i in range(len(passer)):
             edge1.append(passer[i]+ " " + reciver[i])
+#        for i in range(20):
+#            print (shooter[i])
+        for edge in shooter:
+            edge1.append(edge[0]+ " " + edge[1])
+
         for edge in edge1:
             if edge not in edge_no_dup:
                 edge_no_dup.append(edge)
@@ -63,10 +70,12 @@ class analyzeData:
             if v > maxEdge:
                 maxEdge = v
             
-        
+        edge_width_dict ={}
         edge_no_dup_split = []
         for edge in edge_no_dup:
-            edge_width.append(z[edge]/maxEdge*6)
+            value = z[edge]/maxEdge*6
+            edge_width.append(value)
+            edge_width_dict[edge] = value
             x = edge.split(" ")
             edge_no_dup_split.append((x[0],x[1]))
         edge_no_dup = edge_no_dup_split
@@ -76,22 +85,18 @@ class analyzeData:
         for i in passer: 
             if i not in node_no_dup: 
                 node_no_dup.append(i)
-        #append a goal node
-        node_no_dup_label = []
         labels = {}
         for node in node_no_dup:
             labels[node] = (node[7:])
         labels["Goal"] = "Goal"
         node_no_dup.append("Goal")
-        print(node_no_dup_label)
         G = nx.Graph() # Initialize a Graph object                                                        
         G.add_nodes_from(node_no_dup) # Add nodes to the Graph                             
         G.add_edges_from(edge_no_dup) # Add edges to the Graph  
         #print(nx.info(G)) # Print information about the Graph 
         
         
-        mapping = {0: 'a', 1: 'b', 2: 'c'}
-        H = nx.relabel_nodes(G, mapping)
+        
         
         plt.figure(figsize=(10, 10))
         
@@ -111,12 +116,27 @@ class analyzeData:
             if "Goal" in name:
                 colormap.append("Red")
         
+        
         nx.draw_networkx(G, pos = posdict,node_color=colormap,width = edge_width, labels = labels,
                          font_color = "White")
         
         plt.title('Soccer Players', size=15)
         plt.show()
+       # print(nx.pagerank_numpy(G))
         pass
+    def calcShots(team = "Huskies"):
+        """
+        Returns an edgelist of the shots"
+        """
+        fullevents = open(r"2020_Problem_D_DATA\fullevents.csv", "r")
+        edgelist = []
+        for line in fullevents:
+            tokens = line.split(",")
+            if "Shot" in tokens[6] and team in tokens[2]:
+                edgelist.append((tokens[2],"Goal"))
+        return edgelist
+                
+
     def calcAvgPostion():
         """
         Given a file returns a dict with (player,average postion)
