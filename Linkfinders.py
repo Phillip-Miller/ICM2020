@@ -17,6 +17,7 @@ import networkx as nx
 import pandas as pd
 from collections import Counter
 import operator
+import seaborn as sb
 
 fullevents = open(r"2020_Problem_D_DATA\fullevents.csv", "r")
 matches = open(r"2020_Problem_D_DATA\matches.csv", "r")
@@ -98,7 +99,7 @@ class analyzeData:
         
         
         
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(50*1.7, 50))
         
         #nx.draw(g, pos=node_positions, edge_color=edge_colors, node_size=10, node_color='black')
         posdict = analyzeData.calcAvgPostion()
@@ -106,7 +107,7 @@ class analyzeData:
         colormap = []
         for name in node_no_dup:
             if "_G" in name:
-                colormap.append("Yellow")
+                colormap.append("Gray")
             if  "_D" in name:
                 colormap.append("Green")
             if  "_M" in name:
@@ -187,7 +188,20 @@ class analyzeData:
         plt.xticks(range(len(coachWinLoss)), list(coachWinLoss.keys()))
         plt.show()
         pass
-    
+class makeHeatTriangle():
+    passingevent = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
+    passinglist= []
+    passingevent.readline()
+    for line in passingevent:
+        line = line.split(",")
+        pt1 = Point(float(line[7]),float(line[8]))
+        pt2 = Point(float(line[9]),float(line[10]))
+        if ("Huskies" in line[2] and "Huskies" in line[3]):
+           passinglist.append([line[2],pt1])
+           passinglist.append([line[3],pt2])
+#        for lin
+        
+            
 class Point:
     """
     Point class to hold XY coordinates
@@ -199,21 +213,17 @@ class Point:
         return self.x
     def returnY(self):
         return self.y
-class Player(Point):
-    def __init__(self,x,y,name,degree = 0):
+class Player():
+    def __init__(self,x,y,name):
         self.x = float(x)
         self.y = float(y)
         self.name = name
-        self.degree = degree
-    def returnDegree(self):
-        return self.degree
     def returnName(self):
         return self.name
 if __name__ == "__main__":
      analyzeData.mainM()
      #print(analyzeData.calcAvgPostion())
      #print(analyzeData.calcAvgPostion(passingevents))
-     
     
     
 
