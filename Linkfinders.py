@@ -99,7 +99,7 @@ class analyzeData:
         
         
         
-        plt.figure(figsize=(50*1.7, 50))
+        plt.figure(figsize=(10*1.7, 10))
         
         #nx.draw(g, pos=node_positions, edge_color=edge_colors, node_size=10, node_color='black')
         posdict = analyzeData.calcAvgPostion()
@@ -188,20 +188,56 @@ class analyzeData:
         plt.xticks(range(len(coachWinLoss)), list(coachWinLoss.keys()))
         plt.show()
         pass
-class makeHeatTriangle():
-    passingevent = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
-    passinglist= []
-    passingevent.readline()
-    for line in passingevent:
-        line = line.split(",")
-        pt1 = Point(float(line[7]),float(line[8]))
-        pt2 = Point(float(line[9]),float(line[10]))
-        if ("Huskies" in line[2] and "Huskies" in line[3]):
-           passinglist.append([line[2],pt1])
-           passinglist.append([line[3],pt2])
-#        for lin
-        
+
+    
+    def findTriangles():
+        passingevent = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
+        passinglist= []
+        passingevent.readline()
+        passingtriangle = []
+        passingtrianglecenter = []
+        for line in passingevent:
+            line = line.split(",")
+            Player1 = Player(line[7],line[8],line[2])
+            Player2 = Player(line[9],line[10],line[3])
+            if ("Huskies" in line[2] and "Huskies" in line[3]):
+               passinglist.append(Player1)
+               passinglist.append(Player2)
+        for i in range(len(passinglist)):
+            try:
+                if passinglist[i].returnName() == passinglist[i+2].returnName():
+                    passingtriangle.append([passinglist[i],passinglist[i+1],passinglist[i+2]])
+            except Exception:
+                pass
+        writeFile = open("Triangles.csv","w")
+
+        for triangle in passingtriangle:
             
+            meanX = statistics.mean([triangle[0].returnX(),triangle[1].returnX(),triangle[2].returnX()])
+            meanY = statistics.mean([triangle[0].returnY(),triangle[1].returnY(),triangle[2].returnY()])
+#            meanPoint = Point(meanX,meanY)
+#            passingtrianglecenter.append(meanPoint)
+            stringPoint = str(round(meanX,2)) + "," + str(round(meanY,2))
+            writeFile.write(stringPoint + "\n")
+        writeFile.close()
+        
+    def triangleHeatMap():
+        xcords = []
+        ycords = []
+        
+        inTriangle = open("Triangles.csv","r")
+        for line in inTriangle:
+            line = line.split(",")
+            xcords.append(line[0])
+            ycords.append(line[1])
+            
+        plt.hexbin(xcords, ycords, gridsize=20, cmap='Blues')
+        cb = plt.colorbar(label='# Triangle Occurences')
+
+             
+        fig = matplotlib.pyplot.gcf()
+        fig.set_size_inches(18.5, 10.5)
+        fig.savefig('test2png.png', dpi=100)
 class Point:
     """
     Point class to hold XY coordinates
@@ -213,7 +249,7 @@ class Point:
         return self.x
     def returnY(self):
         return self.y
-class Player():
+class Player(Point):
     def __init__(self,x,y,name):
         self.x = float(x)
         self.y = float(y)
@@ -221,9 +257,10 @@ class Player():
     def returnName(self):
         return self.name
 if __name__ == "__main__":
-     analyzeData.mainM()
-     #print(analyzeData.calcAvgPostion())
-     #print(analyzeData.calcAvgPostion(passingevents))
+     #analyzeData.mainM()
+     #analyzeData.findTriangles()
+     analyzeData.triangleHeatMap()
+     
     
     
 
