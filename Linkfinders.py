@@ -252,34 +252,37 @@ class analyzeData:
         validTriangleXlist = [26.923076923076923,38.46153846153846,38.46153846153846,44.61538461538461,26.923076923076923,63.84615384615385]
         validTriangleYlist = [56.25,12.5,31.25,81.25,18.75,87.5]
         for Points in Tedgelist:
+            #TEdgelist like [pointobj0,[pointobj1]]
             p1closeX = False
             p2closeX = False
             p1closeY= False
             p2closeY = False
             letter_of_passer = ""
             letter_of_reciver= ""
-
             for i in range(6):
-                if abs(Points[0].returnX()-validTriangleXlist[i]) < 3:
-                    p1closeX = True
-                if abs(Points[0].returnY()-validTriangleYlist[i]) < 3:
-                    p1closeY = True
-                if p1closeX and p1closeY:
-                    letter_of_passer = letterList[i]
-                    continue
-                if abs(Points[1].returnX()-validTriangleXlist[i]) < 3:
-                    p2closeX = True
-                if abs(Points[1].returnY()-validTriangleYlist[i]) < 3:
-                    p2closeY = True
-                if p2closeX and p2closeY:
-                    letter_of_reciver = letterList[i]
-                    continue
+                if not p1closeX and not p1closeY:
+                    if abs(Points[0].returnX()-validTriangleXlist[i]) < 5:
+                        p1closeX = True
+                    if abs(Points[0].returnY()-validTriangleYlist[i]) < 5:
+                        p1closeY = True
+                    if p1closeX and p1closeY:
+                        letter_of_passer = letterList[i]
+                        continue
+                if not p2closeX and not p2closeY:
+                    if abs(Points[1].returnX()-validTriangleXlist[i]) < 5:
+                        p2closeX = True
+                    if abs(Points[1].returnY()-validTriangleYlist[i]) < 5:
+                        p2closeY = True
+                    if p2closeX and p2closeY:
+                        letter_of_reciver = letterList[i]
+                        continue
             if  p1closeX and p2closeX and p1closeY and p2closeY:
                 #Youve found a pass between triangles
                 validTedgelist.append([letter_of_passer,letter_of_reciver])
         print("Length", len(validTedgelist))
         #Valid edge list now has a list of passes between the triangles
         F.add_edges_from(validTedgelist)
+        #Make the x and y axis 100 instead of whatever it is now
         nx.draw_networkx(F, pos = positions)
         print(validTedgelist)
         
