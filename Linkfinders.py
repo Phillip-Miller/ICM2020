@@ -29,14 +29,6 @@ Plot heatmap of where players spend time
 Do a whole bunch of plots, and stick code and graph in google docs
 """
 
-class Player:
-    def __init__(self,):
-        """
-        Games, Passes, Goals, etc
-        """
-        pass
-class triangle(Player):
-    pass
 
 class analyzeData:
         
@@ -95,9 +87,6 @@ class analyzeData:
         G.add_nodes_from(node_no_dup) # Add nodes to the Graph                             
         G.add_edges_from(edge_no_dup) # Add edges to the Graph  
         #print(nx.info(G)) # Print information about the Graph 
-        
-        
-        
         
         plt.figure(figsize=(10*1.7, 10))
         
@@ -228,16 +217,73 @@ class analyzeData:
         inTriangle = open("Triangles.csv","r")
         for line in inTriangle:
             line = line.split(",")
-            xcords.append(line[0])
-            ycords.append(line[1])
-            
-        plt.hexbin(xcords, ycords, gridsize=20, cmap='Blues')
-        cb = plt.colorbar(label='# Triangle Occurences')
+            #Scaling to get 120 by 70 field
+            xcords.append(float(line[0])*1.3)
+            #Making 0,0 top left
+            ycords.append(80 - float(line[1])*.8)
+        fig2 = plt.figure()
+        plt.hist2d(xcords, ycords, bins=25)
+        plt.xlabel('X Position (defense on left)')
+        plt.ylabel('Y Position (facing foward from defense)')
+        cbar = plt.colorbar()
+        cbar.ax.set_ylabel('Triangle Occurences') 
+#        plt.hexbin(xcords, ycords, gridsize=20, cmap='Blues')
+#        cb = plt.colorbar(label='# Triangle Occurences')
 
-             
+            
         fig = matplotlib.pyplot.gcf()
         fig.set_size_inches(18.5, 10.5)
-        fig.savefig('test2png.png', dpi=100)
+#        fig.savefig('test2png.png', dpi=200)
+    def trackInOut():
+        letterList = ["A","B","C","D","E","F"]
+        F = nx.Graph()
+        F.add_nodes_from(["A","B","C","D","E","F"])
+        positions = {"A":(27,56),"B":(38,12.5),"C":(38.5,31),"D":(44.6,81.25),"E":(30,18.75),"F":(63.85,87.5)}
+        inf = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
+        Tedgelist = []
+        for line in passingevents:
+            line = line.split(",")
+            if "Huskies" in line[2] and "Huskies" in line[3]:
+                oPt = Point(line[7],line[8])
+                rPt = Point(line[9],line[10])
+                Tedgelist.append([oPt,rPt])
+        validTedgelist = []
+        validTriangleList = [[26.923076923076923, 56.25], [38.46153846153846, 12.5], [38.46153846153846, 31.25], [44.61538461538461, 81.25], [26.923076923076923, 18.75], [63.84615384615385, 87.5]]
+        validTriangleXlist = [26.923076923076923,38.46153846153846,38.46153846153846,44.61538461538461,26.923076923076923,63.84615384615385]
+        validTriangleYlist = [56.25,12.5,31.25,81.25,18.75,87.5]
+        for Points in Tedgelist:
+            p1closeX = False
+            p2closeX = False
+            p1closeY= False
+            p2closeY = False
+            letter_of_passer = ""
+            letter_of_reciver= ""
+
+            for i in range(6):
+                if abs(Points[0].returnX()-validTriangleXlist[i]) < 3:
+                    p1closeX = True
+                if abs(Points[0].returnY()-validTriangleYlist[i]) < 3:
+                    p1closeY = True
+                if p1closeX and p1closeY:
+                    letter_of_passer = letterList[i]
+                    continue
+                if abs(Points[1].returnX()-validTriangleXlist[i]) < 3:
+                    p2closeX = True
+                if abs(Points[1].returnY()-validTriangleYlist[i]) < 3:
+                    p2closeY = True
+                if p2closeX and p2closeY:
+                    letter_of_reciver = letterList[i]
+                    continue
+            if  p1closeX and p2closeX and p1closeY and p2closeY:
+                #Youve found a pass between triangles
+                validTedgelist.append([letter_of_passer,letter_of_reciver])
+        print("Length", len(validTedgelist))
+        #Valid edge list now has a list of passes between the triangles
+        F.add_edges_from(validTedgelist)
+        nx.draw_networkx(F, pos = positions)
+        print(validTedgelist)
+        
+                        
 class Point:
     """
     Point class to hold XY coordinates
@@ -259,7 +305,8 @@ class Player(Point):
 if __name__ == "__main__":
      #analyzeData.mainM()
      #analyzeData.findTriangles()
-     analyzeData.triangleHeatMap()
+     #analyzeData.triangleHeatMap()
+     analyzeData.trackInOut()
      
     
     
