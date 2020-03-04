@@ -3,8 +3,6 @@
 Created on Thu Feb 13 15:13:46 2020
 
 @author: PhillipM
-Shots are orange
-Goals are red
 """
 
 import matplotlib.pyplot as plt
@@ -23,11 +21,6 @@ fullevents = open(r"2020_Problem_D_DATA\fullevents.csv", "r")
 matches = open(r"2020_Problem_D_DATA\matches.csv", "r")
 passingevents = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
 coachWinLoss = {"Coach1":0,"Coach2":0,"Coach3":0}
-"""
-Plot heatmap of where players spend time
-
-Do a whole bunch of plots, and stick code and graph in google docs
-"""
 
 
 class analyzeData:
@@ -37,7 +30,6 @@ class analyzeData:
         reciver = []
         for line in passingevents:
             line = line.split(",")
-            #Assuming you cant have a apposing reciver?
             if "Huskies" in line[2] and "Huskies" in line[3]:
                 passer.append(line[2])
                 reciver.append(line[3])
@@ -86,7 +78,7 @@ class analyzeData:
         G = nx.Graph() # Initialize a Graph object                                                        
         G.add_nodes_from(node_no_dup) # Add nodes to the Graph                             
         G.add_edges_from(edge_no_dup) # Add edges to the Graph  
-        #print(nx.info(G)) # Print information about the Graph 
+        print(nx.info(G)) # Print information about the Graph 
         
         plt.figure(figsize=(10*1.7, 10))
         
@@ -105,15 +97,19 @@ class analyzeData:
                 colormap.append("Orange")
             if "Goal" in name:
                 colormap.append("Red")
-        
-        
+        dicto  = nx.pagerank(G)
+        list0  = []
+        list1 = []
+        for k , v in dicto.items():
+            list1.append(v)
+            list0.append(v*10000)
+        print("SD = ", statistics.stdev(list1))
         nx.draw_networkx(G, pos = posdict,node_color=colormap,width = edge_width, labels = labels,
-                         font_color = "White")
+                         font_color = "White", node_size = list0)
         
         plt.title('Soccer Players', size=15)
         plt.show()
-       # print(nx.pagerank_numpy(G))
-        pass
+           # print(nx.pagerank_numpy(G))
     def calcShots(team = "Huskies"):
         """
         Returns an edgelist of the shots"
@@ -229,16 +225,39 @@ class analyzeData:
         cbar.ax.set_ylabel('Triangle Occurences') 
 #        plt.hexbin(xcords, ycords, gridsize=20, cmap='Blues')
 #        cb = plt.colorbar(label='# Triangle Occurences')
+    def passingHeatMap():
+        inFile = open(r"2020_Problem_D_DATA\passingevents.csv","r")
+        px = []
+        py = []
+        passerX = []
+        passerY = []
+        for line in inFile:
+            line = line.split(",")
+            if "Huskies" in line[2] and "Huskies" in line[3]:
+                px.append(float(line[7]))
+                py.append(float(line[8]))
+                passerX.append(float(line[7])*1.3)
+                passerY.append(float(line[8])*.8)
+         
+        plt.title = "2D Hisogram of all Passes"
 
-            
+        plt.hist2d(passerX, passerY, bins=25)
+        plt.xlabel('X Position (defense on left)')
+        plt.ylabel('Y Position (facing foward from defense)')
+        cbar = plt.colorbar()
         fig = matplotlib.pyplot.gcf()
         fig.set_size_inches(18.5, 10.5)
-#        fig.savefig('test2png.png', dpi=200)
+    #        fig.savefig('test2png.png', dpi=200)
     def trackInOut():
         letterList = ["A","B","C","D","E","F"]
         F = nx.Graph()
         F.add_nodes_from(["A","B","C","D","E","F"])
-        positions = {"A":(27,56),"B":(38,12.5),"C":(38.5,31),"D":(44.6,81.25),"E":(30,18.75),"F":(63.85,87.5)}
+        positions = {"A":[27,56],"B":[38,12.5],"C":[38.5,31],"D":[44.6,81.25],"E":[45,50],"F":[63.85,87.5]}
+        ##______ ATTEMPT
+        for k,v in positions.items():
+            v = [float(v[0])*1.7,float(v[1])*.7]
+        
+        #____
         inf = open(r"2020_Problem_D_DATA\passingevents.csv", "r")
         Tedgelist = []
         for line in passingevents:
@@ -249,8 +268,8 @@ class analyzeData:
                 Tedgelist.append([oPt,rPt])
         validTedgelist = []
         validTriangleList = [[26.923076923076923, 56.25], [38.46153846153846, 12.5], [38.46153846153846, 31.25], [44.61538461538461, 81.25], [26.923076923076923, 18.75], [63.84615384615385, 87.5]]
-        validTriangleXlist = [26.923076923076923,38.46153846153846,38.46153846153846,44.61538461538461,26.923076923076923,63.84615384615385]
-        validTriangleYlist = [56.25,12.5,31.25,81.25,18.75,87.5]
+        validTriangleXlist = [26.923076923076923,38.46153846153846,38.46153846153846,44.61538461538461,45,63.84615384615385]
+        validTriangleYlist = [56.25,12.5,31.25,81.25,50,87.5]
         for Points in Tedgelist:
             #TEdgelist like [pointobj0,[pointobj1]]
             p1closeX = False
@@ -261,30 +280,49 @@ class analyzeData:
             letter_of_reciver= ""
             for i in range(6):
                 if not p1closeX and not p1closeY:
-                    if abs(Points[0].returnX()-validTriangleXlist[i]) < 5:
+                    if abs(Points[0].returnX()-validTriangleXlist[i]) < 5 and abs(Points[0].returnY()-validTriangleYlist[i]) < 5:
                         p1closeX = True
-                    if abs(Points[0].returnY()-validTriangleYlist[i]) < 5:
                         p1closeY = True
-                    if p1closeX and p1closeY:
                         letter_of_passer = letterList[i]
                         continue
                 if not p2closeX and not p2closeY:
-                    if abs(Points[1].returnX()-validTriangleXlist[i]) < 5:
+                    if abs(Points[1].returnX()-validTriangleXlist[i]) < 5 and abs(Points[1].returnY()-validTriangleYlist[i]) < 5:
                         p2closeX = True
-                    if abs(Points[1].returnY()-validTriangleYlist[i]) < 5:
                         p2closeY = True
-                    if p2closeX and p2closeY:
                         letter_of_reciver = letterList[i]
                         continue
             if  p1closeX and p2closeX and p1closeY and p2closeY:
                 #Youve found a pass between triangles
-                validTedgelist.append([letter_of_passer,letter_of_reciver])
-        print("Length", len(validTedgelist))
+                validTedgelist.append(str(letter_of_passer) + " " + str(letter_of_reciver))
+        #-----------------
+        edge_no_dup = []
+        for edge in validTedgelist:
+            if edge not in edge_no_dup:
+                edge_no_dup.append(edge)
+        z = Counter(validTedgelist)
+        maxEdge = 0
+        for k,v in z.items():
+            if v > maxEdge:
+                maxEdge = v
+            
+        edge_width_dict ={}
+        edge_width = []
+        edgesplit = []
+        for edge in edge_no_dup:
+            value = z[edge]/maxEdge*6
+            edge_width.append(value)
+            edge_width_dict[edge] = value
+            edgesplit.append(edge.split(" "))
         #Valid edge list now has a list of passes between the triangles
-        F.add_edges_from(validTedgelist)
+        F.add_edges_from(edgesplit)
         #Make the x and y axis 100 instead of whatever it is now
-        nx.draw_networkx(F, pos = positions)
-        print(validTedgelist)
+        dicto  = nx.pagerank(F)
+        list0  = []
+        for k , v in dicto.items():
+            list0.append(v*1000)
+        nx.draw_networkx(F, pos = positions,width = edge_width,arrows = True, node_size = list0, labels = False)
+        plt.figure(figsize=(10*1.7, 10))
+        
         
                         
 class Point:
@@ -299,18 +337,14 @@ class Point:
     def returnY(self):
         return self.y
 class Player(Point):
-    def __init__(self,x,y,name):
+    def __init__(self,x,y,name): 
         self.x = float(x)
         self.y = float(y)
         self.name = name
     def returnName(self):
         return self.name
-if __name__ == "__main__":
-     #analyzeData.mainM()
-     #analyzeData.findTriangles()
-     #analyzeData.triangleHeatMap()
-     analyzeData.trackInOut()
-     
+if __name__ == "__main__": 
+     analyzeData.mainM()
     
     
 
