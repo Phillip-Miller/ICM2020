@@ -8,3 +8,4 @@ The Original Data Given is in the file labeled 2020_Problem_D_Data which is unmo
 data we recived. Our main code (Linkfinders.py) is included as well, which has several functions we built 
 to genererate data, which is shown in our pdf document. 
 
+https://www.comap.com/undergraduate/contests/mcm/contests/2020/results/2020_ICM_Problem_D_Results.pdf
